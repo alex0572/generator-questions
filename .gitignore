@@ -1,0 +1,15 @@
+# Планирование / ТЗ (только локально)
+SUMMARY.md
+TZ.md
+IMPLEMENTATION_PLAN.md
+
+venv/
+.env
+deploy/.env
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+logs/
+frontend/node_modules/
+frontend/dist/

@@ -1,0 +1,54 @@
+# Production docker-compose для сервера ihorn.
+# Запуск: docker compose up -d
+# Обновление образов: ./update-containers.sh
+#
+# Перед первым запуском:
+#   1. Скопируйте .env.example → .env и заполните переменные
+#   2. docker compose pull && docker compose up -d
+
+networks:
+  questions-network:
+    driver: bridge
+    name: questions-network
+
+services:
+  backend:
+    image: ${DOCKER_USER}/questions-backend:latest
+    container_name: questions-backend
+    restart: unless-stopped
+    networks:
+      - questions-network
+    env_file:
+      - .env
+    volumes:
+      - ./logs:/app/logs
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    image: ${DOCKER_USER}/questions-frontend:latest
+    container_name: questions-frontend
+    restart: unless-stopped
+    networks:
+      - questions-network
+    ports:
+      - "80:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    depends_on:
+      backend:
+        condition: service_healthy
